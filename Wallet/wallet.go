@@ -46,10 +46,10 @@ func MakeWallet() *Wallet {
 	return &wallet
 }
 
-func (ws *Wallets) AddWallet() {
+func (ws *Wallets) AddWallet() string {
 	wallet := MakeWallet()
 	address := fmt.Sprintf("%s", wallet.Address())
-	fmt.Println(address)
+	// fmt.Println(address)
 	if ws.Wallets == nil {
 		ws.Wallets = make(map[string]*Wallet)
 		ws.Wallets[address] = wallet
@@ -57,6 +57,7 @@ func (ws *Wallets) AddWallet() {
 		ws.Wallets[address] = wallet
 	}
 	addresses = append(addresses, address)
+	return address
 }
 
 func (w Wallet) Address() []byte {
@@ -107,6 +108,10 @@ func Base58Decode(input []byte) []byte {
 
 func GetAllAddresses() []string {
 	return addresses
+}
+
+func GetAllWalletDetails() *Wallets {
+	return &Wallets{};
 }
 
 // func main() {
