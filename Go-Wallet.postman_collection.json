@@ -1,0 +1,122 @@
+{
+	"info": {
+		"_postman_id": "b5dc2582-e0a2-4a63-b0cc-6af0b2b76541",
+		"name": "Go-Wallet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "addwallet",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/addwallet",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"addwallet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllWalletAddresses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/getAllWalletAddresses",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"getAllWalletAddresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllWalletDetails",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/getAllWalletDetails",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"getAllWalletDetails"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transferToken",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/transferToken/50/1Ehvau6eyREST8haWZteACBgAbjF4tsRfR/1PkpEUYGPh9HN3jCLpb7RzQa57TkTWAnGV",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"transferToken",
+						"50",
+						"1Ehvau6eyREST8haWZteACBgAbjF4tsRfR",
+						"1PkpEUYGPh9HN3jCLpb7RzQa57TkTWAnGV"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
