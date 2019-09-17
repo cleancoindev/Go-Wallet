@@ -3,14 +3,14 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
-	wallet "github.com/sunnyRK/GO-WALLET/Wallet"
+	wallet "github.com/sunnyradadiya/Github/GO-WALLET/Wallet"
 )
 
 type Blockchain struct {
@@ -23,18 +23,30 @@ type Block struct {
 	PrevHash         []byte
 	SenderAddress    string
 	RecipientAddress string
-	Timestamp string
+	Timestamp        string
 }
 
 var wallets wallet.Wallets
 var chain Blockchain
 
+// Generate hash for new block
 func (b *Block) DeriveHash() {
-	info := bytes.Join([][]byte{b.PrevHash}, []byte{})
+	info := bytes.Join([][]byte{b.PrevHash, []byte(b.Timestamp)}, []byte{})
 	hash := sha256.Sum256(info)
 	b.Hash = hash[:]
 }
 
+// check newly created block is valid
+// new block hash and previous block prevhash should match
+func isBlockValid(newBlock, oldBlock *Block) bool {
+	res := bytes.Compare(oldBlock.Hash, newBlock.PrevHash)
+	if res != 0 {
+		return false
+	}
+	return true
+}
+
+// create new block with all parameters
 func CreateBlock(token int, prevHash []byte, senderAddress string, recipientAddress string) *Block {
 	t := time.Now()
 	block := &Block{[]byte{}, token, prevHash, senderAddress, recipientAddress, t.String()}
@@ -42,23 +54,28 @@ func CreateBlock(token int, prevHash []byte, senderAddress string, recipientAddr
 	return block
 }
 
+// Add block to blockchain
 func (chain *Blockchain) AddBlock(token int, senderAddress string, recipientAddress string) {
 	prevBlock := chain.blocks[len(chain.blocks)-1]
 	new := CreateBlock(token, prevBlock.Hash, senderAddress, recipientAddress)
-	chain.blocks = append(chain.blocks, new)
-
+	if isBlockValid(new, prevBlock) {
+		chain.blocks = append(chain.blocks, new)
+	}
 }
 
+// Genesis block
 func Genesis() *Block {
 	return CreateBlock(0, []byte{}, "", "")
 }
 
+// Initialize blockchain
 func InitBlockchain() *Blockchain {
 	return &Blockchain{[]*Block{Genesis()}}
 }
 
+////////// APIs //////////
+
 func addWallet(w http.ResponseWriter, r *http.Request) {
-	// wallets := &wallet.Wallets{}
 	w.Header().Set("Content-Type", "application/json")
 	address := wallets.AddWallet()
 	_ = json.NewDecoder(r.Body).Decode(address)
@@ -104,4 +121,3 @@ func main() {
 	router.HandleFunc("/transferToken/{val}/{sender}/{recipient}", TransferToken).Methods("POST")
 	http.ListenAndServe(":8000", router)
 }
-

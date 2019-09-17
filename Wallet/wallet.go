@@ -46,7 +46,7 @@ func MakeWallet() *Wallet {
 	return &wallet
 }
 
-func (ws *Wallets) AddWallet() {
+func (ws *Wallets) AddWallet() string {
 	wallet := MakeWallet()
 	address := fmt.Sprintf("%s", wallet.Address())
 	fmt.Println(address)
@@ -57,6 +57,7 @@ func (ws *Wallets) AddWallet() {
 		ws.Wallets[address] = wallet
 	}
 	addresses = append(addresses, address)
+	return address
 }
 
 func (w Wallet) Address() []byte {
