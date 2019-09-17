@@ -7,6 +7,7 @@ Also added wallet module to create new wallet address. In wallet module it first
 # Run
 - To run write below command into terminal
    
+        cd Blockchain
         go run main.go
 
 # screenshots
