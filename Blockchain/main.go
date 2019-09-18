@@ -3,14 +3,16 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
 	"strconv"
 	"time"
+	"html/template"
 
 	"github.com/gorilla/mux"
-	wallet "github.com/sunnyRK/GO-WALLET/Wallet"
+	// wallet "github.com/sunnyradadiya/Github/GO-WALLET/Wallet"
+	wallet "github.com/sunnyRK/Go-Wallet/Wallet"
 )
 
 type Blockchain struct {
@@ -23,18 +25,37 @@ type Block struct {
 	PrevHash         []byte
 	SenderAddress    string
 	RecipientAddress string
-	Timestamp string
+	Timestamp        string
 }
 
 var wallets wallet.Wallets
 var chain Blockchain
 
+var tpl *template.Template
+
+func init() {
+	fmt.Println("hi1")
+	tpl = template.Must(template.ParseGlob("templates/*.html"))
+}
+
+// Generate hash for new block
 func (b *Block) DeriveHash() {
-	info := bytes.Join([][]byte{b.PrevHash}, []byte{})
+	info := bytes.Join([][]byte{b.PrevHash, []byte(b.Timestamp)}, []byte{})
 	hash := sha256.Sum256(info)
 	b.Hash = hash[:]
 }
 
+// check newly created block is valid
+// new block hash and previous block prevhash should match
+func isBlockValid(newBlock, oldBlock *Block) bool {
+	res := bytes.Compare(oldBlock.Hash, newBlock.PrevHash)
+	if res != 0 {
+		return false
+	}
+	return true
+}
+
+// create new block with all parameters
 func CreateBlock(token int, prevHash []byte, senderAddress string, recipientAddress string) *Block {
 	t := time.Now()
 	block := &Block{[]byte{}, token, prevHash, senderAddress, recipientAddress, t.String()}
@@ -42,23 +63,28 @@ func CreateBlock(token int, prevHash []byte, senderAddress string, recipientAddr
 	return block
 }
 
+// Add block to blockchain
 func (chain *Blockchain) AddBlock(token int, senderAddress string, recipientAddress string) {
 	prevBlock := chain.blocks[len(chain.blocks)-1]
 	new := CreateBlock(token, prevBlock.Hash, senderAddress, recipientAddress)
-	chain.blocks = append(chain.blocks, new)
-
+	if isBlockValid(new, prevBlock) {
+		chain.blocks = append(chain.blocks, new)
+	}
 }
 
+// Genesis block
 func Genesis() *Block {
 	return CreateBlock(0, []byte{}, "", "")
 }
 
+// Initialize blockchain
 func InitBlockchain() *Blockchain {
 	return &Blockchain{[]*Block{Genesis()}}
 }
 
+////////// APIs //////////
+
 func addWallet(w http.ResponseWriter, r *http.Request) {
-	// wallets := &wallet.Wallets{}
 	w.Header().Set("Content-Type", "application/json")
 	address := wallets.AddWallet()
 	_ = json.NewDecoder(r.Body).Decode(address)
@@ -90,10 +116,11 @@ func TransferToken(w http.ResponseWriter, r *http.Request) {
 		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
 		chain.AddBlock(token, sender, recipient)
 	}
-	json.NewEncoder(w).Encode(&chain.blocks)
 }
 
 func main() {
+	
+	fmt.Println("hi2")
 	chain.blocks = append(chain.blocks, Genesis())
 	fmt.Println(chain)
 
@@ -102,6 +129,44 @@ func main() {
 	router.HandleFunc("/getAllWalletAddresses", getAllWalletAddresses).Methods("GET")
 	router.HandleFunc("/getAllWalletDetails", getAllWalletDetails).Methods("GET")
 	router.HandleFunc("/transferToken/{val}/{sender}/{recipient}", TransferToken).Methods("POST")
+	
+	router.HandleFunc("/", index).Methods("GET")
+	router.HandleFunc("/process", processor).Methods("POST")
 	http.ListenAndServe(":8000", router)
 }
 
+func index(w http.ResponseWriter, r *http.Request) {
+	tpl.ExecuteTemplate(w, "index.html", nil)
+}
+
+func processor(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	token, _ := strconv.Atoi(r.FormValue("token"))
+	sender := r.FormValue("sender")
+	recipient := r.FormValue("recipient")
+	// val := 10
+	d := struct{
+		S_address string
+		R_address string
+		Tokens    int
+	}{
+		S_address: sender,
+		R_address: recipient,
+		Tokens:    token,
+	}
+	
+	// json.NewEncoder(w).Encode(nil)
+	tpl.ExecuteTemplate(w, "processor.html", d)
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewDecoder(r.Body).Decode(chain)
+	if wallets.Wallets[sender].Token >= token {
+		wallets.Wallets[sender].Token = wallets.Wallets[sender].Token - token
+		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
+		chain.AddBlock(token, sender, recipient)
+	}
+	json.NewEncoder(w).Encode(&chain.blocks)
+}
