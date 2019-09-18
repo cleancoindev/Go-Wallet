@@ -29,6 +29,7 @@ const (
 	version        = byte(0x00)
 )
 
+// create new key pair for private and public key
 func NewKeyPair() (ecdsa.PrivateKey, []byte) {
 	curve := elliptic.P256()
 
@@ -60,6 +61,7 @@ func (ws *Wallets) AddWallet() string {
 	return address
 }
 
+// generate address from private and public keys
 func (w Wallet) Address() []byte {
 	pubHash := PublicKeyHash(w.PublicKey)
 	versionHash := append([]byte{version}, pubHash...)
@@ -111,7 +113,7 @@ func GetAllAddresses() []string {
 }
 
 func GetAllWalletDetails() *Wallets {
-	return &Wallets{};
+	return &Wallets{}
 }
 
 // func main() {
