@@ -82,6 +82,29 @@ func InitBlockchain() *Blockchain {
 	return &Blockchain{[]*Block{Genesis()}}
 }
 
+
+
+func main() {
+	
+	fmt.Println("hi2")
+	chain.blocks = append(chain.blocks, Genesis())
+	fmt.Println(chain)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/addwallet", addWallet).Methods("POST")
+	router.HandleFunc("/getAllWalletAddresses", getAllWalletAddresses).Methods("GET")
+	router.HandleFunc("/getAllWalletDetails", getAllWalletDetails).Methods("GET")
+	router.HandleFunc("/transferToken/{val}/{sender}/{recipient}", TransferToken).Methods("POST")
+	
+	router.HandleFunc("/", index).Methods("GET")
+	router.HandleFunc("/sendtoken", SendToken).Methods("POST")
+	http.ListenAndServe(":8000", router)
+}
+
+func index(w http.ResponseWriter, r *http.Request) {
+	tpl.ExecuteTemplate(w, "index.html", nil)
+}
+
 ////////// APIs //////////
 
 func addWallet(w http.ResponseWriter, r *http.Request) {
@@ -116,30 +139,10 @@ func TransferToken(w http.ResponseWriter, r *http.Request) {
 		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
 		chain.AddBlock(token, sender, recipient)
 	}
+	json.NewEncoder(w).Encode(&chain.blocks)
 }
 
-func main() {
-	
-	fmt.Println("hi2")
-	chain.blocks = append(chain.blocks, Genesis())
-	fmt.Println(chain)
-
-	router := mux.NewRouter()
-	router.HandleFunc("/addwallet", addWallet).Methods("POST")
-	router.HandleFunc("/getAllWalletAddresses", getAllWalletAddresses).Methods("GET")
-	router.HandleFunc("/getAllWalletDetails", getAllWalletDetails).Methods("GET")
-	router.HandleFunc("/transferToken/{val}/{sender}/{recipient}", TransferToken).Methods("POST")
-	
-	router.HandleFunc("/", index).Methods("GET")
-	router.HandleFunc("/process", processor).Methods("POST")
-	http.ListenAndServe(":8000", router)
-}
-
-func index(w http.ResponseWriter, r *http.Request) {
-	tpl.ExecuteTemplate(w, "index.html", nil)
-}
-
-func processor(w http.ResponseWriter, r *http.Request) {
+func SendToken(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
