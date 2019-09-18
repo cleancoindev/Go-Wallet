@@ -11,14 +11,15 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	// wallet "github.com/sunnyradadiya/Github/GO-WALLET/Wallet"
 	wallet "github.com/sunnyRK/Go-Wallet/Wallet"
 )
 
+// ledger of all blocks
 type Blockchain struct {
 	blocks []*Block
 }
 
+// block of transaction
 type Block struct {
 	Hash             []byte
 	Token            int
@@ -34,6 +35,7 @@ var chain Blockchain
 var tpl *template.Template
 
 func init() {
+	// Initialize templates
 	tpl = template.Must(template.ParseGlob("../templates/*.html"))
 }
 
@@ -102,6 +104,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 ////////// APIs //////////
 
+// generate new wallet address
 func addWallet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	address := wallets.AddWallet()
@@ -111,32 +114,20 @@ func addWallet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&address)
 }
 
+// Get All generated wallet addresses
 func getAllWalletAddresses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	addresses := wallet.GetAllAddresses()
 	json.NewEncoder(w).Encode(addresses)
 }
 
+// Get All generated wallet address details
 func getAllWalletDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(wallets)
 }
 
-func TransferToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars(r)
-	token, _ := strconv.Atoi(vars["val"])
-	sender := vars["sender"]
-	recipient := vars["recipient"]
-	_ = json.NewDecoder(r.Body).Decode(chain)
-	if wallets.Wallets[sender].Token >= token {
-		wallets.Wallets[sender].Token = wallets.Wallets[sender].Token - token
-		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
-		chain.AddBlock(token, sender, recipient)
-	}
-	json.NewEncoder(w).Encode(&chain.blocks)
-}
-
+// send token between wallet address and store transaction in blockchain using webapp
 func SendToken(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -167,4 +158,19 @@ func SendToken(w http.ResponseWriter, r *http.Request) {
 		chain.AddBlock(token, sender, recipient)
 	}
 	// json.NewEncoder(w).Encode(&chain.blocks)
+}
+
+func TransferToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	vars := mux.Vars(r)
+	token, _ := strconv.Atoi(vars["val"])
+	sender := vars["sender"]
+	recipient := vars["recipient"]
+	_ = json.NewDecoder(r.Body).Decode(chain)
+	if wallets.Wallets[sender].Token >= token {
+		wallets.Wallets[sender].Token = wallets.Wallets[sender].Token - token
+		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
+		chain.AddBlock(token, sender, recipient)
+	}
+	json.NewEncoder(w).Encode(&chain.blocks)
 }
