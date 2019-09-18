@@ -148,7 +148,7 @@ func SendToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// json.NewEncoder(w).Encode(nil)
-	tpl.ExecuteTemplate(w, "processor.html", d)
+	tpl.ExecuteTemplate(w, "show.html", d)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewDecoder(r.Body).Decode(chain)
