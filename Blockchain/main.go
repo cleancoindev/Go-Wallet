@@ -5,10 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"time"
-	"html/template"
 
 	"github.com/gorilla/mux"
 	// wallet "github.com/sunnyradadiya/Github/GO-WALLET/Wallet"
@@ -34,8 +34,7 @@ var chain Blockchain
 var tpl *template.Template
 
 func init() {
-	fmt.Println("hi1")
-	tpl = template.Must(template.ParseGlob("templates/*.html"))
+	tpl = template.Must(template.ParseGlob("../templates/*.html"))
 }
 
 // Generate hash for new block
@@ -82,11 +81,7 @@ func InitBlockchain() *Blockchain {
 	return &Blockchain{[]*Block{Genesis()}}
 }
 
-
-
 func main() {
-	
-	fmt.Println("hi2")
 	chain.blocks = append(chain.blocks, Genesis())
 	fmt.Println(chain)
 
@@ -95,7 +90,7 @@ func main() {
 	router.HandleFunc("/getAllWalletAddresses", getAllWalletAddresses).Methods("GET")
 	router.HandleFunc("/getAllWalletDetails", getAllWalletDetails).Methods("GET")
 	router.HandleFunc("/transferToken/{val}/{sender}/{recipient}", TransferToken).Methods("POST")
-	
+
 	router.HandleFunc("/", index).Methods("GET")
 	router.HandleFunc("/sendtoken", SendToken).Methods("POST")
 	http.ListenAndServe(":8000", router)
@@ -151,7 +146,7 @@ func SendToken(w http.ResponseWriter, r *http.Request) {
 	sender := r.FormValue("sender")
 	recipient := r.FormValue("recipient")
 	// val := 10
-	d := struct{
+	d := struct {
 		S_address string
 		R_address string
 		Tokens    int
@@ -160,7 +155,7 @@ func SendToken(w http.ResponseWriter, r *http.Request) {
 		R_address: recipient,
 		Tokens:    token,
 	}
-	
+
 	// json.NewEncoder(w).Encode(nil)
 	tpl.ExecuteTemplate(w, "processor.html", d)
 
@@ -171,5 +166,5 @@ func SendToken(w http.ResponseWriter, r *http.Request) {
 		wallets.Wallets[recipient].Token = wallets.Wallets[recipient].Token + token
 		chain.AddBlock(token, sender, recipient)
 	}
-	json.NewEncoder(w).Encode(&chain.blocks)
+	// json.NewEncoder(w).Encode(&chain.blocks)
 }

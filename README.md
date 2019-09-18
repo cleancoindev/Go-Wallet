@@ -20,3 +20,14 @@ I have attached 5 screenshots with repo to interact with blockchain using postma
 - fourth screenshot(**transferToken/token/sender/recipient**) : Using this api you can transfer token between addresses and the transaction block will store in ledger. you can see ledger in scrrenshot.
 - fifth screenshot(**getAllWalletDetails**) : Again(third screenshot) hit this api to see change in token value in wallet addresses. 
 
+# Webapp
+
+- After Running program write http://localhost:8000 and you will get template.
+- First press "Generate Wallet Address" Button to genrate addresses. Generate more than two addresses.
+- Second you can get all generated addresses by pressing on "Get All Wallet Addresses" Button.
+- Third you can also get all generated address details by pressing "Get All Wallet Addresses Details" Button. Details like Private key, Public key and Token associated with wallet address.
+- Forth you can transfer token in between wallet addresses by giving Token value, sender address, recipient address to form and press send Button.
+- To check updated token presse again "Get All Wallet Addresses Details" Button.
+
+
+
